@@ -107,5 +107,12 @@
 	    <artifactId>commons-cli</artifactId>
 	    <version>1.4</version>
 	</dependency>
-  </dependencies>
+	</dependencies>
+	<repositories>
+    <repository>
+        <id>jaspersoft-third-party</id>
+        <url>https://jaspersoft.jfrog.io/artifactory/third-party-ce-artifacts/</url>
+    </repository>
+</repositories>
+
 </project>

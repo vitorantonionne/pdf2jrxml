@@ -332,24 +332,48 @@ public class JrxmlReport {
 		return elementList;
 	}
 	
-	private List<JRDesignElement> extractFormFields(Config config, Page pdfPage, PDDocument document, int pageNo) throws IOException {
-		List<JRDesignElement> elementList = new ArrayList<JRDesignElement>();
+	// private List<JRDesignElement> extractFormFields(Config config, Page pdfPage, PDDocument document, int pageNo) throws IOException {
+	// 	List<JRDesignElement> elementList = new ArrayList<JRDesignElement>();
 		
-		Map<String, Object> fields = new HashMap<String, Object>();
+	// 	Map<String, Object> fields = new HashMap<String, Object>();
 		
-        PDDocumentCatalog pdCatalog = document.getDocumentCatalog();
-        PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
-        for (PDField pdField : pdAcroForm.getFields()) {
+  //       PDDocumentCatalog pdCatalog = document.getDocumentCatalog();
+  //       PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
+  //       for (PDField pdField : pdAcroForm.getFields()) {
 
-        	fields.put(pdField.getPartialName(), java.lang.String.class);	// TODO set right class
-        	JRDesignTextField element = createTextField(pdField, pdfPage);
-        	if (element != null) {
-        		elementList.add(element);
-        	}
+  //       	fields.put(pdField.getPartialName(), java.lang.String.class);	// TODO set right class
+  //       	JRDesignTextField element = createTextField(pdField, pdfPage);
+  //       	if (element != null) {
+  //       		elementList.add(element);
+  //       	}
+  //       }
+  //       pdfPage.setFields(fields);
+  //       return elementList;
+	// }
+
+	private List<JRDesignElement> extractFormFields(Config config, Page pdfPage, PDDocument document, int pageNo) throws IOException {
+    List<JRDesignElement> elementList = new ArrayList<>();
+    Map<String, Object> fields = new HashMap<>();
+
+    PDDocumentCatalog pdCatalog = document.getDocumentCatalog();
+    PDAcroForm pdAcroForm = pdCatalog.getAcroForm();
+
+    if (pdAcroForm == null) {
+        pdfPage.setFields(fields); 
+        return elementList; 
+    }
+
+    for (PDField pdField : pdAcroForm.getFields()) {
+        fields.put(pdField.getPartialName(), java.lang.String.class);
+        JRDesignTextField element = createTextField(pdField, pdfPage);
+        if (element != null) {
+            elementList.add(element);
         }
-        pdfPage.setFields(fields);
-        return elementList;
-	}
+    }
+
+    pdfPage.setFields(fields);
+    return elementList;
+}
 	
 	private JRDesignTextField createTextField(PDField pdField, Page pdfPage) {
 		JRDesignTextField element = null;
@@ -404,16 +428,28 @@ public class JrxmlReport {
 	 * @param value String value to convert to int.
 	 * @return int value of String as an rounded int.
 	 */
+	
+	// private int convertString2Int(String value) {
+	// 	if (value == null) {
+	// 		return 0;
+	// 	}
+	// 	try {
+	// 		return Math.round(Float.parseFloat(value));
+	// 	} catch (NumberFormatException e) {
+	// 		return 0;
+	// 	}
+	// }
 	private int convertString2Int(String value) {
-		if (value == null) {
-			return 0;
-		}
-		try {
-			return Math.round(Float.parseFloat(value));
-		} catch (NumberFormatException e) {
-			return 0;
-		}
+	if (value == null) {
+		return 0;
 	}
+	try {
+		return Math.max(0, Math.round(Float.parseFloat(value)));
+	} catch (NumberFormatException e) {
+		return 0;
+	}
+}
+
 	
 	/**
 	 * Convert String to float.  If specified String is null or an illegal float, return 0.
@@ -444,9 +480,12 @@ public class JrxmlReport {
 		}
 		String fontName = value;
 		String[] fontParts = value.split("\\+");
-		if (fontParts.length > 0) {
+		if (fontParts.length > 1) {
 			fontName = fontParts[1];
-		}
+		} else {
+        fontName = fontParts[0];
+    }
+		
 		fontParts = fontName.split("-");
 		if (fontParts.length > 0) {
 			fontName = fontParts[0];
